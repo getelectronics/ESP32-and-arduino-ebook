@@ -1,0 +1,80 @@
+//Again we use a library this is the adafruit CCS811 one - you can use the library manager and add this you will also the Thingspeak libraries for this example https://github.com/mathworks/thingspeak-arduino 
+#include "ThingSpeak.h"
+#include <WiFi.h>
+#include "Adafruit_CCS811.h"
+
+char ssid[] = "networkssid"; // your network SSID (name)
+char pass[] = "networkname"; // your network password
+int keyIndex = 0; // your network key Index number (needed only for
+WEP)
+WiFiClient client;
+unsigned long myChannelNumber = 00000;
+const char * myWriteAPIKey = "apikey";
+Adafruit_CCS811 ccs;
+
+void setup()
+{
+Serial.begin(115200); //Initialize serial
+if(!ccs.begin())
+{
+Serial.println("Failed to start sensor! Please check your wiring.");
+while(1);
+}
+//calibrate temperature sensor
+while(!ccs.available());
+float temp = ccs.calculateTemperature();
+ccs.setTempOffset(temp - 25.0);
+delay(10);
+WiFi.mode(WIFI_STA);
+ThingSpeak.begin(client); // Initialize ThingSpeak
+}
+
+void loop()
+{
+// Connect or reconnect to WiFi
+if(WiFi.status() != WL_CONNECTED)
+{
+Serial.print("Attempting to connect to SSID: ");
+//Serial.println(SECRET_SSID);
+while(WiFi.status() != WL_CONNECTED)
+{
+WiFi.begin(ssid, pass); // Connect to WPA/WPA2 network. Change this
+line if using open or WEP network
+Serial.print(".");
+delay(5000);
+}
+Serial.println("\nConnected.");
+}
+if(ccs.available())
+{
+if(!ccs.readData())
+{
+float ccsCO2 = ccs.geteCO2();
+float ccsTVOC = ccs.getTVOC();
+float ccsTemp = ccs.calculateTemperature();
+// Write to ThingSpeak. There are up to 8 fields in a channel, allowing
+you to store up to 8 different
+// pieces of information in a channel.
+ThingSpeak.setField(1, ccsCO2);
+ThingSpeak.setField(2, ccsTVOC);
+ThingSpeak.setField(3, ccsTemp);
+// write to the ThingSpeak channel
+int x = ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);
+if(x == 200)
+{
+Serial.println("Channel update successful.");
+}
+else
+{
+Serial.println("Problem updating channel. HTTP error code " +
+String(x));
+}
+}
+else
+{
+Serial.println("ERROR!");
+while(1);
+}
+}
+delay(20000); // Wait 20 seconds to update the channel again
+}

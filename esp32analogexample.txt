@@ -1,0 +1,26 @@
+int analog0;
+int analog1;
+int analog2;
+int analogVal0 = 0;
+int analogVal1 = 0; 
+int analogVal2 = 0; 
+
+void setup() 
+{
+Serial.begin(9600); // use the serial port to send the values back to the computer 
+}
+
+void loop()
+{
+analogVal0 = analogRead(analog0); // read the value from the sensor
+analogVal1 = analogRead(analog1);
+analogVal2 = analogRead(analog2);
+
+Serial.println("analogVal0"); // print the value to the serial port 
+Serial.println(analogVal0);
+Serial.println("analogVal1"); // print the value to the serial port
+Serial.println(analogVal1);
+Serial.println("analogVal2"); // print the value to the serial port
+Serial.println(analogVal2);
+}
+

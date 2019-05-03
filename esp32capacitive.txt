@@ -1,0 +1,26 @@
+#define TOUCH_PIN T0 //connected to 4
+#define LED_PIN A13 //connected to 15
+int touch_value = 100;
+
+void setup()
+{
+Serial.begin(9600);
+Serial.println("ESP32 Touch Test");
+pinMode(LED_PIN, OUTPUT);
+digitalWrite (LED_PIN, LOW);
+}
+
+void loop()
+{
+touch_value = touchRead(TOUCH_PIN);
+Serial.println(touch_value); // get value using T0
+if (touch_value < 50)
+{
+digitalWrite (LED_PIN, HIGH);
+}
+else
+{
+digitalWrite (LED_PIN, LOW);
+}
+delay(1000);
+}

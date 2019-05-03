@@ -1,0 +1,27 @@
+#include <Adafruit_NeoPixel.h>
+
+#define PIN 21
+
+//the Wemos WS2812B RGB shield has 1 LED connected to pin 2 (IO21)
+Adafruit_NeoPixel pixels = Adafruit_NeoPixel(1, PIN, NEO_GRB + NEO_KHZ800);
+
+void setup()
+{
+pixels.begin(); // This initializes the NeoPixel library.
+}
+
+void loop()
+{
+setColor(255,0,0,1000); //red
+setColor(0,255,0,1000); //green
+setColor(0,0,255,1000); //blue
+}
+
+//simple function which takes values for the red, green and blue led and also
+//a delay
+void setColor(int redValue, int greenValue, int blueValue, int delayValue)
+{
+pixels.setPixelColor(0, pixels.Color(redValue, greenValue, blueValue));
+pixels.show();
+delay(delayValue);
+}

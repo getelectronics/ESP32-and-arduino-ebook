@@ -1,0 +1,26 @@
+//You will need an updated I2C LCD library, the original one I couldn't get to work but this one does seem to work - http://www.esp32learning.com/wp-content/uploads/2017/12/LiquidCrystal_I2C-master.zip 
+//You will need to import this into the IDE as usual 
+//Now my example below required the I2C address to be changed to 0x3F, a lot of the examples I have looked at are set to 0x27 
+
+
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+LiquidCrystal_I2C lcd(0x3F,16,2); // set the LCD address to 0x3F for a 16 chars and 2 line display
+
+void setup()
+{
+lcd.init(); // initialize the lcd
+lcd.init();
+// Print a message to the LCD.
+lcd.backlight();
+lcd.setCursor(0,0);
+lcd.print("Hello world");
+lcd.setCursor(1,0);
+lcd.print("ESP32 I2C LCD");
+
+}
+
+void loop()
+{
+}

@@ -1,0 +1,24 @@
+#include <Wire.h>
+
+// address of PCF8574 IC
+#define PCF8574_ADDR (0x20)
+
+void setup() 
+{
+  Wire.begin();
+}
+
+void loop() 
+{
+
+  
+  //send the data
+  Wire.beginTransmission(PCF8574_ADDR);
+  Wire.write(0xAA);
+  Wire.endTransmission();
+  delay(1000);
+  Wire.beginTransmission(PCF8574_ADDR);
+  Wire.write(0x55);
+  Wire.endTransmission();
+  delay(1000);
+}

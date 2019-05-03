@@ -1,0 +1,130 @@
+//I use a variety of Adafruit libraries, took the default examples and made the following out of them 
+//https://github.com/adafruit/Adafruit_Sensor 
+//https://github.com/adafruit/Adafruit_BMP280_Library
+// https://github.com/adafruit/Adafruit_Si7021 
+//I got the sea level pressure value from https://www.weatheronline.co.uk/weather/maps/current?LANG=en&CONT=euro&REGION=0003&LAND=UK&LEVEL=4&R=310&CEL=C&ART=tabelle&TYP=druck 
+
+#include <WiFi.h>
+#include <Wire.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BMP280.h>
+#include "Adafruit_Si7021.h"
+
+const char* ssid = "yourname";
+const char* password = "yourpasssword";
+
+Adafruit_BMP280 bmp; // I2C
+Adafruit_Si7021 sensor = Adafruit_Si7021();
+WiFiServer server(80);
+
+void setup()
+{
+Serial.begin(115200);
+pinMode(5, OUTPUT); // set the LED pin mode
+if (!bmp.begin())
+{
+Serial.println("Could not find a valid BMP280 sensor, check wiring!");
+while (1);
+}
+
+if (!sensor.begin())
+{
+Serial.println("Did not find Si7021 sensor!");
+while (true);
+}
+delay(10);
+
+// We start by connecting to a WiFi network
+
+Serial.println();
+Serial.println();
+Serial.print("Connecting to ");
+Serial.println(ssid);
+
+WiFi.begin(ssid, password);
+
+while (WiFi.status() != WL_CONNECTED) {
+delay(500);
+Serial.print(".");
+}
+
+Serial.println("");
+Serial.println("WiFi connected.");
+Serial.println("IP address: ");
+Serial.println(WiFi.localIP());
+
+server.begin();
+
+}
+
+int value = 0;
+
+void loop(){
+WiFiClient client = server.available(); // listen for incoming clients
+
+if (client)
+{ // if you get a client,
+Serial.println("New Client."); // print a message out the serial port
+String currentLine = ""; // make a String to hold incoming data from the client
+while (client.connected())
+{ // loop while the client's connected
+if (client.available())
+{ // if there's bytes to read from the client,
+char c = client.read(); // read a byte, then
+Serial.write(c); // print it out the serial monitor
+if (c == '\n')
+{ // if the byte is a newline character
+
+// if the current line is blank, you got two newline characters in a row.
+// that's the end of the client HTTP request, so send a response:
+if (currentLine.length() == 0)
+{
+client.println("HTTP/1.1 200 OK");
+client.println("Content-Type: text/html");
+client.println("Connnection: close");
+client.println();
+client.println("<!DOCTYPE HTML>");
+client.println("<html>");
+client.println("<meta http-equiv=\"refresh\" content=\"5\">");
+client.println("<br />");
+//bmp280 part
+client.println("<h3>BMP280 readings</h3>");
+client.print("Pressure (Pa): ");
+client.println((float)bmp.readPressure(), 1);
+client.println("<br />");
+client.print("Temperature (C): ");
+client.println((float)bmp.readTemperature(), 1);
+client.println("<br />");
+client.print("Altitude (m): ");
+client.println((float)bmp.readAltitude(1024), 1); // this should be adjusted to your local forcase
+client.println("<br />");
+//SI7021 part
+client.println("<h3>SI7021 readings</h3>");
+client.print("Humidity (%): ");
+client.println((float)sensor.readHumidity(), 1);
+client.println("<br />");
+client.print("Temperature (C): ");
+client.println((float)sensor.readTemperature(), 1);
+client.println("<br />");
+
+client.println("</html>");
+break;
+// break out of the while loop:
+break;
+}
+else
+{ // if you got a newline, then clear currentLine:
+currentLine = "";
+}
+}
+else if (c != '\r')
+{ // if you got anything else but a carriage return character,
+currentLine += c; // add it to the end of the currentLine
+}
+}
+}
+// close the connection:
+client.stop();
+Serial.println("Client Disconnected.");
+}
+}
